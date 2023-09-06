@@ -1,6 +1,5 @@
 token
 */*
-*/test.cpp
 !*/*.cpp
 !*/*.c
 !*/*.h
