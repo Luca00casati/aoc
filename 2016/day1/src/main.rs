@@ -62,23 +62,23 @@ fn add_step(vec: &Vec<(i32, i32)>) -> Vec<(i32, i32)> {
         let x2 = vec[i + 1].0;
         let y2 = vec[i + 1].1;
         step_store.push((x1, y1));
-        if x1 > x2{
-            for ii in (x2 + 1 ..x1).rev(){
+        if x1 > x2 {
+            for ii in (x2 + 1..x1).rev() {
                 step_store.push((ii, y1));
             }
         }
-        if x2 > x1{
-            for ii in x1 + 1 ..x2{
+        if x2 > x1 {
+            for ii in x1 + 1..x2 {
                 step_store.push((ii, y1));
             }
         }
-        if y1 > y2{
-            for ii in (y2 + 1 ..y1).rev(){
+        if y1 > y2 {
+            for ii in (y2 + 1..y1).rev() {
                 step_store.push((x1, ii));
             }
         }
-        if y2 > y1{
-            for ii in y1 + 1 ..y2{
+        if y2 > y1 {
+            for ii in y1 + 1..y2 {
                 step_store.push((x1, ii));
             }
         }
