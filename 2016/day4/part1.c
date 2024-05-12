@@ -12,7 +12,7 @@ struct Room {
   char *key;
   int *value;
   int nkey;
-  char cmpchs[6];
+  char cmpchs[6]; // same
 };
 
 void takeletters(struct Room *room, char *str, int len) {
@@ -59,60 +59,67 @@ int checkkey(char key, char *str, int len) {
   return -1;
 }
 
-int nunique(char *str, int len) {
-  int count[256] = {0};
-  int unique_count = 0;
-  for (int i = 0; i < len; i++) {
-    count[(int)str[i]]++;
-  }
-  for (int i = 0; i < 256; i++) {
-    if (count[i] > 0) {
-      unique_count++;
-    }
-  }
-
-  return unique_count;
-}
-
 void freekeyvalue(struct Room *room) {
   free(room->key);
   free(room->value);
 }
 
-void takekeyvalue(struct Room *room, char *str, int len) {
-  int count[256] = {0};
-  int unique_count = 0;
-
+bool charpresent(char c, char *str, int len) {
   for (int i = 0; i < len; i++) {
-    if (str[i] != '-') {
-      count[(int)str[i]]++;
+    if (str[i] == c) {
+      return true;
     }
   }
-  for (int i = 0; i < 256; i++) {
-    if (count[i] > 0) {
-      unique_count++;
-    }
-  }
-  room->nkey = unique_count;
-  room->key = malloc(unique_count * sizeof(char) + 1);
-  room->value = malloc(unique_count * sizeof(int));
-
-  if (room->key == NULL || room->value == NULL) {
-    fprintf(stderr, "Memory allocation failed.\n");
-    return;
-  }
-  int index = 0;
-  for (int i = 0; i < len; i++) {
-    if (count[(int)str[i]] > 0) {
-      room->key[index] = str[i];
-      room->value[index] = count[(int)str[i]];
-      count[(int)str[i]] = 0; 
-      index++;
-    }
-  }
-  room->key[index] = '\0';
+  return false;
 }
 
+int countUniqueChars(const char *str) {
+  int count[MAX_LETTERS] = {0};
+  int uniqueCount = 0;
+
+  for (int i = 0; str[i]; i++) {
+    count[str[i]]++;
+  }
+
+  for (int i = 0; i < MAX_LETTERS; i++) {
+    if (count[i] > 0) {
+      uniqueCount++;
+    }
+  }
+
+  return uniqueCount;
+}
+
+int charfind(char c, const char *str, int len) {
+  for (int i = 0; i < len; i++) {
+    if (str[i] == c) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+void takekeyvalue(struct Room *room, char *str, int len) {
+  int index = 0;
+  room->nkey = countUniqueChars(str);
+  room->key = malloc(room->nkey * sizeof(char) + 1);
+  room->value = malloc(room->nkey * sizeof(int));
+  if (room->key == NULL || room->value == NULL) {
+    fprintf(stderr, "Memory allocation failed.\n");
+  }
+  for (int i = 0; i < len; i++) {
+    if (!charpresent(str[i], room->key, room->nkey)) {
+      room->key[index] = str[i];
+      index++;
+    }
+    if (charpresent(str[i], room->key, room->nkey)) {
+      int f = charfind(str[i], room->key, room->nkey);
+      room->value[f]++;
+    }
+  }
+
+  room->key[index] = '\0';
+}
 
 int main() {
   struct Room *room = malloc(sizeof(struct Room));
@@ -132,12 +139,12 @@ int main() {
   printf("%ld\n", room->id);
   printf("%s\n", room->chs);
   printf("%s\n", room->key);
-  for (int i = 0; i < room->nkey; i++){
-  printf("%d ", room->value[i]);
+  for (int i = 0; i < room->nkey; i++) {
+    printf("%d ", room->value[i]);
   }
   printf("\n");
   printf("%d\n", room->nkey);
-  //printf("%s\n", room->cmpchs);
+  // printf("%s\n", room->cmpchs);
 
   freekeyvalue(room);
   free(room);
