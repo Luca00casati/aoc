@@ -73,22 +73,23 @@ bool charpresent(char c, char *str, int len) {
   return false;
 }
 
-int countUniqueChars(const char *str) {
-  int count[MAX_LETTERS] = {0};
-  int uniqueCount = 0;
-
-  for (int i = 0; str[i]; i++) {
-    count[str[i]]++;
-  }
-
-  for (int i = 0; i < MAX_LETTERS; i++) {
-    if (count[i] > 0) {
-      uniqueCount++;
+int countunique(const char *str) {
+ int count = 0;
+    for (size_t i = 0; i < strlen(str); i++){
+         bool appears = false;
+         for (size_t j = 0; j < i; j++){
+              if (str[j] == str[i]){
+                  appears = true;
+                  break;
+              }
+         }
+         if (!appears){
+             count++;
+         }
     }
-  }
-
-  return uniqueCount;
+    return count;
 }
+
 
 int charfind(char c, const char *str, int len) {
   for (int i = 0; i < len; i++) {
@@ -99,9 +100,29 @@ int charfind(char c, const char *str, int len) {
   return -1;
 }
 
+bool checkvalueorder(int* v, int len){
+    for (int i = 0, j = 1 ; i < len-1;j++, i++){
+        if (v[i] >= v[j]){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool checkkeyorder(char* k, int* v, int len){
+    for (int i = 0, j = 1 ; i < len-1;j++, i++){
+        if (v[i] == v[j]){
+            if (k[i] >= k[j]){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void takekeyvalue(struct Room *room, char *str, int len) {
   int index = 0;
-  room->nkey = countUniqueChars(str);
+  room->nkey = countunique(str);
   room->key = malloc(room->nkey * sizeof(char) + 1);
   room->value = malloc(room->nkey * sizeof(int));
   if (room->key == NULL || room->value == NULL) {
@@ -110,6 +131,7 @@ void takekeyvalue(struct Room *room, char *str, int len) {
   for (int i = 0; i < len; i++) {
     if (!charpresent(str[i], room->key, room->nkey)) {
       room->key[index] = str[i];
+      room->value[index] = 0;
       index++;
     }
     if (charpresent(str[i], room->key, room->nkey)) {
@@ -117,8 +139,38 @@ void takekeyvalue(struct Room *room, char *str, int len) {
       room->value[f]++;
     }
   }
-
   room->key[index] = '\0';
+  //if (checkvalueorder(room->value, room->nkey)){
+  //  printf("true\n");
+  //}
+  //if (checkkeyorder(room->key, room->value, room->nkey)){
+  //  printf("true\n");
+  //}
+  int tempval;
+  char tempkey;
+  while (!checkvalueorder(room->value, room->nkey-1)) {
+     for (int i = 0, j = 1 ; i < len-1;j++, i++){
+        if (room->value[i] >= room->value[j]){
+            tempval = room->value[i];
+            room->value[i] = room->value[j];
+            room->value[j] = tempval;
+            tempkey = room->key[i];
+            room->key[i] = room->key[j];
+            room->key[j] = tempkey;
+        }
+    }
+}
+while (!checkkeyorder(room->key, room->value, room->nkey-1)) {
+     for (int i = 0, j = 1 ; i < len-1;j++, i++){
+        if (room->value[i] == room->value[j]){
+            if (room->key[i] >= room->key[j]){
+            tempkey = room->key[i];
+            room->key[i] = room->key[j];
+            room->key[j] = tempkey;
+        }
+    }}
+}
+
 }
 
 int main() {
