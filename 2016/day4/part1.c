@@ -3,10 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LETTERS 1024
-
 struct Room {
-  char letters[MAX_LETTERS];
+  char *letters;
   long id;
   char chs[6]; // 5 + null
   char *key;
@@ -16,8 +14,13 @@ struct Room {
 };
 
 void takeletters(struct Room *room, char *str, int len) {
+  room->letters = malloc((len + 1) * sizeof(char));
+  if (room->letters == NULL) {
+    fprintf(stderr, "Memory allocation failed.\n");
+    exit(1);
+  }
   size_t letters_index = 0;
-  for (int i = 0; i < len && letters_index < MAX_LETTERS; i++) {
+  for (int i = 0; i < len; i++) {
     if (str[i] != '-') {
       room->letters[letters_index] = str[i];
       if (str[i] >= '0' && str[i] <= '9') {
@@ -44,33 +47,16 @@ void takeid(struct Room *room, char *str, int len) {
 }
 
 void takechs(struct Room *room, char *str, int len) {
-  for (int i = len - 6, j = 0; i < len - 1; i++, j++) {
-    room->chs[j] = str[i];
-  }
-  room->chs[5] = '\0';
-}
-
-int checkkey(char key, char *str, int len) {
   for (int i = 0; i < len; i++) {
-    if (str[i] == key) {
-      return i;
+    if (str[i] == '[') {
+      i++;
+      for (int j = 0; j < 5; j++) {
+        room->chs[j] = str[i + j];
+      }
+      room->chs[5] = '\0';
+      break;
     }
   }
-  return -1;
-}
-
-void freekeyvalue(struct Room *room) {
-  free(room->key);
-  free(room->value);
-}
-
-bool charpresent(char c, char *str, int len) {
-  for (int i = 0; i < len; i++) {
-    if (str[i] == c) {
-      return true;
-    }
-  }
-  return false;
 }
 
 int countunique(const char *str) {
@@ -90,6 +76,15 @@ int countunique(const char *str) {
   return count;
 }
 
+bool charpresent(char c, char *str, int len) {
+  for (int i = 0; i < len; i++) {
+    if (str[i] == c) {
+      return true;
+    }
+  }
+  return false;
+}
+
 int charfind(char c, const char *str, int len) {
   for (int i = 0; i < len; i++) {
     if (str[i] == c) {
@@ -102,19 +97,20 @@ int charfind(char c, const char *str, int len) {
 void takekeyvalue(struct Room *room, char *str, int len) {
   int index = 0;
   room->nkey = countunique(str);
-  room->key = malloc(room->nkey * sizeof(char) + 1);
+  room->key = malloc((room->nkey + 1) * sizeof(char));
   room->value = malloc(room->nkey * sizeof(int));
   if (room->key == NULL || room->value == NULL) {
     fprintf(stderr, "Memory allocation failed.\n");
+    exit(1);
   }
+  memset(room->value, 0, room->nkey * sizeof(int));
   for (int i = 0; i < len; i++) {
-    if (!charpresent(str[i], room->key, room->nkey)) {
+    if (!charpresent(str[i], room->key, index)) {
       room->key[index] = str[i];
-      room->value[index] = 0;
+      room->value[index] = 1;
       index++;
-    }
-    if (charpresent(str[i], room->key, room->nkey)) {
-      int f = charfind(str[i], room->key, room->nkey);
+    } else {
+      int f = charfind(str[i], room->key, index);
       room->value[f]++;
     }
   }
@@ -135,11 +131,17 @@ void takekeyvalue(struct Room *room, char *str, int len) {
   }
 }
 
-void takecmpchs(struct Room *room, char * str){
-    for(int i = 0; i < 5; i++){
-        room->cmpchs[i] = str[i];
-    }
-    room->cmpchs[5] = '\0';
+void takecmpchs(struct Room *room, char *str) {
+  strncpy(room->cmpchs, str, 5);
+  room->cmpchs[5] = '\0';
+}
+
+bool cmp(struct Room *room) { return strncmp(room->chs, room->cmpchs, 5) == 0; }
+
+void freekeyvalue(struct Room *room) {
+  free(room->letters);
+  free(room->key);
+  free(room->value);
 }
 
 int main() {
@@ -148,28 +150,49 @@ int main() {
     fprintf(stderr, "Memory allocation failed.\n");
     return 1;
   }
-
-  char *str = "not-a-real-room-404[oarel]";
-  int len = strlen(str);
-  takeletters(room, str, len);
-  takeid(room, str, len);
-  takechs(room, str, len);
-  takekeyvalue(room, room->letters, strlen(room->letters));
-  takecmpchs(room, room->key);
-
-  printf("Letters: %s\n", room->letters);
-  printf("ID: %ld\n", room->id);
-  printf("Checksum: %s\n", room->chs);
-  printf("Keys: %s\n", room->key);
-  printf("Values: ");
-  for (int i = 0; i < room->nkey; i++) {
-    printf("%d ", room->value[i]);
+  long result = 0;
+  FILE *file;
+  char *line = NULL;
+  size_t len = 0;
+  file = fopen("input.txt", "r");
+  if (file == NULL) {
+    perror("Failed to open file");
+    return 1;
   }
-  printf("\n");
-  printf("Number of keys: %d\n", room->nkey);
-  printf("CmpChecksum: %s\n", room->cmpchs);
+  while ((getline(&line, &len, file)) != -1) {
+    int str_len = strlen(line);
+    if (line[str_len - 1] == '\n') {
+      line[str_len - 1] = '\0';
+    }
+    takeletters(room, line, str_len);
+    takeid(room, line, str_len);
+    takechs(room, line, str_len);
+    takekeyvalue(room, room->letters, strlen(room->letters));
+    takecmpchs(room, room->key);
 
-  freekeyvalue(room);
+    printf("Input: %s\n", line);
+    printf("Letters: %s\n", room->letters);
+    printf("ID: %ld\n", room->id);
+    printf("Checksum: %s\n", room->chs);
+    printf("Keys: %s\n", room->key);
+    printf("Values: ");
+    for (int i = 0; i < room->nkey; i++) {
+      printf("%d ", room->value[i]);
+    }
+    printf("\n");
+    printf("Number of keys: %d\n", room->nkey);
+    printf("CmpChecksum: %s\n", room->cmpchs);
+    if (cmp(room)) {
+      printf("VALID\n");
+      result += room->id;
+    } else {
+      printf("INVALID\n");
+    }
+    freekeyvalue(room);
+  }
+  fclose(file);
+  printf("result: %ld\n", result);
+  free(line);
   free(room);
   return 0;
 }
