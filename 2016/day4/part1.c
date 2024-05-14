@@ -151,10 +151,12 @@ int main() {
     return 1;
   }
   long result = 0;
+  FILE *wfile;
   FILE *file;
   char *line = NULL;
   size_t len = 0;
   file = fopen("input.txt", "r");
+  wfile = fopen("output.txt", "a");
   if (file == NULL) {
     perror("Failed to open file");
     return 1;
@@ -185,12 +187,14 @@ int main() {
     if (cmp(room)) {
       printf("VALID\n");
       result += room->id;
+      fprintf(wfile, "%s\n", line);
     } else {
       printf("INVALID\n");
     }
     freekeyvalue(room);
   }
   fclose(file);
+  fclose(wfile);
   printf("result: %ld\n", result);
   free(line);
   free(room);
