@@ -74,22 +74,21 @@ bool charpresent(char c, char *str, int len) {
 }
 
 int countunique(const char *str) {
- int count = 0;
-    for (size_t i = 0; i < strlen(str); i++){
-         bool appears = false;
-         for (size_t j = 0; j < i; j++){
-              if (str[j] == str[i]){
-                  appears = true;
-                  break;
-              }
-         }
-         if (!appears){
-             count++;
-         }
+  int count = 0;
+  for (size_t i = 0; i < strlen(str); i++) {
+    bool appears = false;
+    for (size_t j = 0; j < i; j++) {
+      if (str[j] == str[i]) {
+        appears = true;
+        break;
+      }
     }
-    return count;
+    if (!appears) {
+      count++;
+    }
+  }
+  return count;
 }
-
 
 int charfind(char c, const char *str, int len) {
   for (int i = 0; i < len; i++) {
@@ -98,26 +97,6 @@ int charfind(char c, const char *str, int len) {
     }
   }
   return -1;
-}
-
-bool checkvalueorder(int* v, int len){
-    for (int i = 0, j = 1 ; i < len-1;j++, i++){
-        if (v[i] >= v[j]){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool checkkeyorder(char* k, int* v, int len){
-    for (int i = 0, j = 1 ; i < len-1;j++, i++){
-        if (v[i] == v[j]){
-            if (k[i] >= k[j]){
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 void takekeyvalue(struct Room *room, char *str, int len) {
@@ -140,37 +119,27 @@ void takekeyvalue(struct Room *room, char *str, int len) {
     }
   }
   room->key[index] = '\0';
-  //if (checkvalueorder(room->value, room->nkey)){
-  //  printf("true\n");
-  //}
-  //if (checkkeyorder(room->key, room->value, room->nkey)){
-  //  printf("true\n");
-  //}
-  int tempval;
-  char tempkey;
-  while (!checkvalueorder(room->value, room->nkey-1)) {
-     for (int i = 0, j = 1 ; i < len-1;j++, i++){
-        if (room->value[i] >= room->value[j]){
-            tempval = room->value[i];
-            room->value[i] = room->value[j];
-            room->value[j] = tempval;
-            tempkey = room->key[i];
-            room->key[i] = room->key[j];
-            room->key[j] = tempkey;
-        }
+
+  for (int i = 0; i < room->nkey - 1; i++) {
+    for (int j = i + 1; j < room->nkey; j++) {
+      if (room->value[i] < room->value[j] ||
+          (room->value[i] == room->value[j] && room->key[i] > room->key[j])) {
+        int tempval = room->value[i];
+        room->value[i] = room->value[j];
+        room->value[j] = tempval;
+        char tempkey = room->key[i];
+        room->key[i] = room->key[j];
+        room->key[j] = tempkey;
+      }
     }
-}
-while (!checkkeyorder(room->key, room->value, room->nkey-1)) {
-     for (int i = 0, j = 1 ; i < len-1;j++, i++){
-        if (room->value[i] == room->value[j]){
-            if (room->key[i] >= room->key[j]){
-            tempkey = room->key[i];
-            room->key[i] = room->key[j];
-            room->key[j] = tempkey;
-        }
-    }}
+  }
 }
 
+void takecmpchs(struct Room *room, char * str){
+    for(int i = 0; i < 5; i++){
+        room->cmpchs[i] = str[i];
+    }
+    room->cmpchs[5] = '\0';
 }
 
 int main() {
@@ -180,23 +149,25 @@ int main() {
     return 1;
   }
 
-  char *str = "aaaaa-bbb-z-y-x-123[abxyz]";
+  char *str = "not-a-real-room-404[oarel]";
   int len = strlen(str);
   takeletters(room, str, len);
   takeid(room, str, len);
   takechs(room, str, len);
   takekeyvalue(room, room->letters, strlen(room->letters));
+  takecmpchs(room, room->key);
 
-  printf("%s\n", room->letters);
-  printf("%ld\n", room->id);
-  printf("%s\n", room->chs);
-  printf("%s\n", room->key);
+  printf("Letters: %s\n", room->letters);
+  printf("ID: %ld\n", room->id);
+  printf("Checksum: %s\n", room->chs);
+  printf("Keys: %s\n", room->key);
+  printf("Values: ");
   for (int i = 0; i < room->nkey; i++) {
     printf("%d ", room->value[i]);
   }
   printf("\n");
-  printf("%d\n", room->nkey);
-  // printf("%s\n", room->cmpchs);
+  printf("Number of keys: %d\n", room->nkey);
+  printf("CmpChecksum: %s\n", room->cmpchs);
 
   freekeyvalue(room);
   free(room);
