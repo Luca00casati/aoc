@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
 //macro
 //#define TEST
+//#define MOST
+#define LESS
 
 // test 6
 // input 8
@@ -23,6 +24,25 @@
 #endif
 
 #define MAX_LINE_LENGTH 1024
+
+char least_frequent_char(unsigned char s[LISTLEN]) {
+  int frequency[1024] = {0};
+  int min_count = LISTLEN + 1;
+  char min_char = '\0';
+
+  for (int i = 0; i < LISTLEN; i++) {
+    frequency[(unsigned char)s[i]]++;
+  }
+
+  for (int i = 0; i < LISTLEN; i++) {
+    if (frequency[(unsigned char)s[i]] > 0 && frequency[(unsigned char)s[i]] < min_count) {
+      min_count = frequency[(unsigned char)s[i]];
+      min_char = s[i];
+    }
+  }
+
+  return min_char;
+}
 
 char most_frequent_char(unsigned char s[LISTLEN]) {
   int frequency[1024] = {0};
@@ -167,6 +187,7 @@ int main() {
   fclose(file7);
   #endif
 
+  #ifdef MOST
   printf("%c", most_frequent_char(bfile0));
   printf("%c", most_frequent_char(bfile1));
   printf("%c", most_frequent_char(bfile2));
@@ -176,6 +197,20 @@ int main() {
   #ifndef TEST
   printf( "%c", most_frequent_char(bfile6));
   printf( "%c", most_frequent_char(bfile7));
+  #endif
+  #endif
+
+  #ifdef LESS
+  printf("%c", least_frequent_char(bfile0));
+  printf("%c", least_frequent_char(bfile1));
+  printf("%c", least_frequent_char(bfile2));
+  printf("%c", least_frequent_char(bfile3));
+  printf( "%c", least_frequent_char(bfile4));
+  printf( "%c", least_frequent_char(bfile5));
+  #ifndef TEST
+  printf( "%c", least_frequent_char(bfile6));
+  printf( "%c", least_frequent_char(bfile7));
+  #endif
   #endif
 
   return 0;
