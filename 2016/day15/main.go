@@ -4,16 +4,13 @@ import (
 	"fmt"
 )
 
-// Disc represents a disc in the kinetic sculpture
 type Disc struct {
 	positions int
 	startPos  int
 }
 
-// CapsuleFallsThrough checks if the capsule falls through all discs if dropped at a given time
 func CapsuleFallsThrough(discs []Disc, dropTime int) bool {
 	for i, disc := range discs {
-		// Calculate the position of the disc when the capsule reaches it
 		positionAtTime := (disc.startPos + dropTime + i + 1) % disc.positions
 		if positionAtTime != 0 {
 			return false
@@ -22,7 +19,6 @@ func CapsuleFallsThrough(discs []Disc, dropTime int) bool {
 	return true
 }
 
-// FindFirstTime finds the first time at which the capsule can be dropped to fall through all discs
 func FindFirstTime(discs []Disc) int {
 	time := 0
 	for {
@@ -34,7 +30,6 @@ func FindFirstTime(discs []Disc) int {
 }
 
 func main() {
-	// Define the discs based on the problem statement
 	discs := []Disc{
 		//Disc #1 has 13 positions; at time=0, it is at position 11.
 		//Disc #2 has 5 positions; at time=0, it is at position 0.
