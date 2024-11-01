@@ -65,4 +65,5 @@ $valid_passphrases2 = count_valid_passphrases2($input);
 echo "part2" . PHP_EOL;
 
 echo "valid passphrases: " . $valid_passphrases2 . PHP_EOL;
+
 ?>
